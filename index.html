@@ -5,35 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Лови Сердечки</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: url('https://source.unsplash.com/800x600/?romantic') no-repeat center center/cover;
-            text-align: center;
-            font-family: Arial, sans-serif;
-        }
-        canvas {
-            display: block;
-            margin: auto;
-            touch-action: none;
-        }
-        #gameOverScreen {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        button {
-            margin-top: 10px;
-            padding: 10px;
-            font-size: 18px;
-            cursor: pointer;
-        }
+        body { margin: 0; overflow: hidden; text-align: center; font-family: Arial, sans-serif; }
+        canvas { display: block; margin: auto; touch-action: none; }
+        #gameOverScreen { display: none; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.8); color: white;
+            padding: 20px; border-radius: 10px; }
+        button { margin-top: 10px; padding: 10px; font-size: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -78,18 +55,14 @@
                 if (heart.y > canvas.height) {
                     gameOver = true;
                 }
-                if (
-                    heart.y + heart.height >= player.y &&
+                if (heart.y + heart.height >= player.y &&
                     heart.x >= player.x - player.width / 2 &&
-                    heart.x <= player.x + player.width / 2
-                ) {
+                    heart.x <= player.x + player.width / 2) {
                     player.score++;
                     hearts.splice(index, 1);
                     if (player.score >= 10) {
                         alert("Поздравляем! Вы выиграли!");
-                        window.parent.postMessage("win", "*");
-                        setTimeout(() => { window.parent.postMessage("close", "*"); }, 2000);
-
+                        window.parent.postMessage("win", "*"); // Отправляем сообщение боту
                     }
                 }
             });
@@ -127,7 +100,7 @@
             player.x = event.touches[0].clientX;
         });
 
-        setInterval(spawnHeart, 1500); // Уменьшил частоту появления сердец
+        setInterval(spawnHeart, 1500);
         gameLoop();
     </script>
 </body>
