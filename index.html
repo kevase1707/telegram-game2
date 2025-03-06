@@ -88,7 +88,8 @@
                     if (player.score >= 10) {
                         alert("Поздравляем! Вы выиграли!");
                         window.parent.postMessage("win", "*");
-                        setTimeout(() => { window.close(); }, 2000); // Закрытие окна после победы
+                        setTimeout(() => { window.parent.postMessage("close", "*"); }, 2000);
+
                     }
                 }
             });
