@@ -49,24 +49,32 @@
             });
         }
 
-        function updateHearts() {
-            hearts.forEach((heart, index) => {
-                heart.y += heart.speed;
-                if (heart.y > canvas.height) {
-                    gameOver = true;
-                }
-                if (heart.y + heart.height >= player.y &&
-                    heart.x >= player.x - player.width / 2 &&
-                    heart.x <= player.x + player.width / 2) {
-                    player.score++;
-                    hearts.splice(index, 1);
-                    if (player.score >= 10) {
-                        alert("Поздравляем! Вы выиграли!");
-                        window.parent.postMessage("win", "*"); // Отправляем сообщение боту
-                    }
-                }
-            });
+function updateHearts() {
+    hearts.forEach((heart, index) => {
+        heart.y += heart.speed;
+        if (heart.y > canvas.height) {
+            gameOver = true;
         }
+        if (
+            heart.y + heart.height >= player.y &&
+            heart.x >= player.x - player.width / 2 &&
+            heart.x <= player.x + player.width / 2
+        ) {
+            player.score++;
+            hearts.splice(index, 1);
+            if (player.score >= 10) {
+                alert("Поздравляем! Вы выиграли!");
+                
+                // ОТПРАВЛЯЕМ ДАННЫЕ БОТУ
+                const tg = window.Telegram.WebApp;
+                tg.sendData(JSON.stringify({ result: "win" }));
+
+                setTimeout(() => { tg.close(); }, 1000); // Закрываем игру через 1 секунду
+            }
+        }
+    });
+}
+
 
         function showGameOverScreen() {
             document.getElementById("gameOverScreen").style.display = "block";
