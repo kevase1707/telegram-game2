@@ -1,87 +1,66 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лови сердечки!</title>
+    <title>Мини-игра</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; background-color: #fce4ec; }
-        canvas { background: #fff; display: block; margin: auto; border: 2px solid black; }
-        h1 { color: #d81b60; }
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #game-button {
+            font-size: 20px;
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #game-button:disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+        #score {
+            font-size: 22px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
-    <h1>Лови сердечки! ♡</h1>
-    <canvas id="gameCanvas" width="400" height="500"></canvas>
-    <p>Очки: <span id="score">0</span>/10</p>
+    <h1>Нажимай на кнопку, чтобы набрать 10 очков!</h1>
+    <button id="game-button">+1 Очко</button>
+    <p id="score">Очки: 0</p>
 
     <script>
-        let canvas = document.getElementById("gameCanvas");
-        let ctx = canvas.getContext("2d");
-
-        let basket = { x: 175, y: 450, width: 50, height: 20 };
-        let hearts = [];
         let score = 0;
-        let gameRunning = true;
+        const button = document.getElementById("game-button");
+        const scoreDisplay = document.getElementById("score");
 
-        function drawBasket() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
-        }
-
-        function drawHearts() {
-            ctx.fillStyle = "red";
-            hearts.forEach(heart => {
-                ctx.beginPath();
-                ctx.arc(heart.x, heart.y, 8, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        function updateHearts() {
-            hearts.forEach((heart, index) => {
-                heart.y += 3;
-                if (heart.y > basket.y && heart.x > basket.x && heart.x < basket.x + basket.width) {
-                    score++;
-                    hearts.splice(index, 1);
-                    document.getElementById("score").textContent = score + "/10";
-                }
-                if (heart.y > canvas.height) hearts.splice(index, 1);
-            });
-
-            if (Math.random() < 0.02) {
-                hearts.push({ x: Math.random() * canvas.width, y: 0 });
-            }
-        }
-
-        function gameLoop() {
-            if (!gameRunning) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBasket();
-            drawHearts();
-            updateHearts();
+        button.addEventListener("click", () => {
+            score++;
+            scoreDisplay.textContent = "Очки: " + score;
 
             if (score >= 10) {
-                gameRunning = false;
+                sendWinMessage();
                 alert("Поздравляем! Вы набрали 10 очков!");
-                sendScoreToTelegram();
-            } else {
-                requestAnimationFrame(gameLoop);
+                button.disabled = true;
             }
-        }
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowLeft" && basket.x > 0) basket.x -= 20;
-            if (event.key === "ArrowRight" && basket.x < canvas.width - basket.width) basket.x += 20;
         });
 
-        function sendScoreToTelegram() {
-            if (window.Telegram.WebApp) {
-                Telegram.WebApp.sendData(JSON.stringify({ score: score }));
+        function sendWinMessage() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData("win");  
             }
         }
-
-        gameLoop();
     </script>
 </body>
 </html>
