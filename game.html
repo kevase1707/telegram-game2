@@ -3,64 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мини-игра</title>
+    <title>Лови Сердечки</title>
     <style>
         body {
+            margin: 0;
+            overflow: hidden;
+            background: url('https://source.unsplash.com/800x600/?romantic') no-repeat center center/cover;
             text-align: center;
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
         }
-        h1 {
-            color: #333;
+        canvas {
+            display: block;
+            margin: auto;
+            touch-action: none;
         }
-        #game-button {
-            font-size: 20px;
-            padding: 15px 30px;
-            background-color: #4CAF50;
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
             color: white;
-            border: none;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 18px;
             cursor: pointer;
-            margin-top: 20px;
-        }
-        #game-button:disabled {
-            background-color: gray;
-            cursor: not-allowed;
-        }
-        #score {
-            font-size: 22px;
-            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <h1>Нажимай на кнопку, чтобы набрать 10 очков!</h1>
-    <button id="game-button">+1 Очко</button>
-    <p id="score">Очки: 0</p>
-
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOverScreen">
+        <h1>Вы проиграли!</h1>
+        <button onclick="restartGame()">Играть заново</button>
+    </div>
     <script>
-        let score = 0;
-        const button = document.getElementById("game-button");
-        const scoreDisplay = document.getElementById("score");
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        button.addEventListener("click", () => {
-            score++;
-            scoreDisplay.textContent = "Очки: " + score;
+        let player = { x: canvas.width / 2, y: canvas.height - 50, width: 50, height: 50, score: 0 };
+        let hearts = [];
+        let gameOver = false;
 
-            if (score >= 10) {
-                sendWinMessage();
-                alert("Поздравляем! Вы набрали 10 очков!");
-                button.disabled = true;
+        function drawPlayer() {
+            ctx.fillStyle = "red";
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, 25, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function spawnHeart() {
+            hearts.push({ x: Math.random() * canvas.width, y: 0, width: 30, height: 30, speed: 4 });
+        }
+
+        function drawHearts() {
+            ctx.fillStyle = "pink";
+            hearts.forEach((heart) => {
+                ctx.beginPath();
+                ctx.arc(heart.x, heart.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function updateHearts() {
+            hearts.forEach((heart, index) => {
+                heart.y += heart.speed;
+                if (heart.y > canvas.height) {
+                    gameOver = true;
+                }
+                if (
+                    heart.y + heart.height >= player.y &&
+                    heart.x >= player.x - player.width / 2 &&
+                    heart.x <= player.x + player.width / 2
+                ) {
+                    player.score++;
+                    hearts.splice(index, 1);
+                    if (player.score >= 10) {
+                        alert("Поздравляем! Вы выиграли!");
+                        window.parent.postMessage("win", "*");
+                        setTimeout(() => { window.close(); }, 2000); // Закрытие окна после победы
+                    }
+                }
+            });
+        }
+
+        function showGameOverScreen() {
+            document.getElementById("gameOverScreen").style.display = "block";
+        }
+
+        function restartGame() {
+            document.getElementById("gameOverScreen").style.display = "none";
+            player.score = 0;
+            hearts = [];
+            gameOver = false;
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (gameOver) {
+                showGameOverScreen();
+                return;
             }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawHearts();
+            updateHearts();
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener("mousemove", (event) => {
+            player.x = event.clientX;
         });
 
-        function sendWinMessage() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.sendData("win");  
-            }
-        }
+        document.addEventListener("touchmove", (event) => {
+            player.x = event.touches[0].clientX;
+        });
+
+        setInterval(spawnHeart, 1500); // Уменьшил частоту появления сердец
+        gameLoop();
     </script>
 </body>
 </html>
